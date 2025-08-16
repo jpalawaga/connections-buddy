@@ -80,7 +80,7 @@ export function ConnectionsGame() {
         </div>
 
         {/* Color Swatches */}
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-between gap-2">
           {COLORS.map(color => (
             <ColorSwatch
               key={color}
@@ -91,11 +91,8 @@ export function ConnectionsGame() {
           ))}
         </div>
 
-        {/* Active Color Indicator and Edit Button */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Active: <span className="font-medium capitalize">{activeColor}</span>
-          </span>
+        {/* Edit Button */}
+        <div className="flex justify-end">
           <Button 
             variant="outline" 
             size="sm" 
