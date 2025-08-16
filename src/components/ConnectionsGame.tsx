@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ColorSwatch } from "./ColorSwatch";
@@ -24,6 +24,26 @@ interface NYTConnectionsData {
   categories: NYTCategory[];
 }
 
+interface GameState {
+  originalWords: string[]; // Store the original order
+  tileMarks: Record<number, Color[]>;
+  activeColor: Color;
+  selectedPill: 'today' | 'date' | 'custom';
+  selectedDate: string;
+  puzzleDate?: string; // Track which date this puzzle is for
+  lastUpdated: string;
+}
+
+interface CachedPuzzle {
+  date: string;
+  words: string[];
+  fetchedAt: string;
+}
+
+interface PuzzleCache {
+  [date: string]: CachedPuzzle;
+}
+
 // Sample words for the connections game
 const SAMPLE_WORDS = [
   'BASS', 'FLOUNDER', 'SOLE', 'SALMON',
@@ -33,6 +53,72 @@ const SAMPLE_WORDS = [
 ];
 
 const COLORS: Color[] = ['yellow', 'green', 'blue', 'purple', 'red'];
+
+const STORAGE_KEY = 'connections-buddy-game-state';
+const PUZZLE_CACHE_KEY = 'connections-buddy-puzzle-cache';
+
+const saveGameState = (state: GameState) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn('Failed to save game state:', error);
+  }
+};
+
+const loadGameState = (): GameState | null => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load game state:', error);
+  }
+  return null;
+};
+
+const loadPuzzleCache = (): PuzzleCache => {
+  try {
+    const saved = localStorage.getItem(PUZZLE_CACHE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load puzzle cache:', error);
+  }
+  return {};
+};
+
+const savePuzzleCache = (cache: PuzzleCache) => {
+  try {
+    localStorage.setItem(PUZZLE_CACHE_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.warn('Failed to save puzzle cache:', error);
+  }
+};
+
+const getCachedPuzzle = (date: string): string[] | null => {
+  const cache = loadPuzzleCache();
+  const puzzle = cache[date];
+  
+  if (puzzle) {
+    console.log(`Loading puzzle for ${date} from cache`);
+    return puzzle.words;
+  }
+  
+  return null;
+};
+
+const cachePuzzle = (date: string, words: string[]) => {
+  const cache = loadPuzzleCache();
+  cache[date] = {
+    date,
+    words,
+    fetchedAt: new Date().toISOString()
+  };
+  savePuzzleCache(cache);
+  console.log(`Cached puzzle for ${date}`);
+};
 
 const parseNYTData = (data: NYTConnectionsData): string[] => {
   // Extract all cards and sort by position
@@ -49,6 +135,15 @@ const parseNYTData = (data: NYTConnectionsData): string[] => {
 
 const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
   const puzzleDate = date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  
+  // Check cache first
+  const cachedWords = getCachedPuzzle(puzzleDate);
+  if (cachedWords) {
+    return cachedWords;
+  }
+  
+  // Fetch from API if not in cache
+  console.log(`Fetching puzzle for ${puzzleDate} from API`);
   const url = `https://proxy.corsfix.com/?https://www.nytimes.com/svc/connections/v2/${puzzleDate}.json`;
   
   const response = await fetch(url);
@@ -57,19 +152,45 @@ const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
   }
   
   const data: NYTConnectionsData = await response.json();
-  return parseNYTData(data);
+  const words = parseNYTData(data);
+  
+  // Cache the result
+  cachePuzzle(puzzleDate, words);
+  
+  return words;
 };
 
 export function ConnectionsGame() {
-  const [activeColor, setActiveColor] = useState<Color>('yellow');
-  const [tileMarks, setTileMarks] = useState<Record<number, Color[]>>({});
-  const [words, setWords] = useState(SAMPLE_WORDS);
+  // Initialize state with cached data or defaults
+  const cachedState = loadGameState();
+  
+  // Determine correct pill state based on current date vs cached puzzle date
+  const getCurrentPillState = (): 'today' | 'date' | 'custom' => {
+    if (!cachedState) return 'custom';
+    
+    const today = new Date().toISOString().split('T')[0];
+    const cachedPuzzleDate = cachedState.puzzleDate;
+    const cachedPill = cachedState.selectedPill;
+    
+    // If they had 'today' selected but it's no longer that day, switch to 'date'
+    if (cachedPill === 'today' && cachedPuzzleDate !== today) {
+      return 'date';
+    }
+    
+    return cachedPill;
+  };
+
+  const [activeColor, setActiveColor] = useState<Color>(cachedState?.activeColor || 'yellow');
+  const [tileMarks, setTileMarks] = useState<Record<number, Color[]>>(cachedState?.tileMarks || {});
+  const [originalWords, setOriginalWords] = useState(cachedState?.originalWords || SAMPLE_WORDS);
+  const [words, setWords] = useState(cachedState?.originalWords || SAMPLE_WORDS); // Current display order (may be shuffled)
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(SAMPLE_WORDS.join(' '));
+  const [editText, setEditText] = useState((cachedState?.originalWords || SAMPLE_WORDS).join(' '));
   const [isLoading, setIsLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>('custom');
+  const [selectedDate, setSelectedDate] = useState(cachedState?.selectedDate || cachedState?.puzzleDate || '');
+  const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>(getCurrentPillState());
+  const [puzzleDate, setPuzzleDate] = useState(cachedState?.puzzleDate || '');
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -78,6 +199,23 @@ export function ConnectionsGame() {
       setShowDatePicker(false);
     }
   }, [showDatePicker]);
+
+  // Function to get current game state
+  const getCurrentGameState = useCallback((): GameState => ({
+    originalWords, // Save original order, not current shuffled order
+    tileMarks,
+    activeColor,
+    selectedPill,
+    selectedDate,
+    puzzleDate,
+    lastUpdated: new Date().toISOString()
+  }), [originalWords, tileMarks, activeColor, selectedPill, selectedDate, puzzleDate]);
+
+  // Save state changes to localStorage
+  useEffect(() => {
+    const gameState = getCurrentGameState();
+    saveGameState(gameState);
+  }, [getCurrentGameState]);
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -124,24 +262,29 @@ export function ConnectionsGame() {
       .filter(word => word.length > 0)
       .slice(0, 16); // Limit to 16 words
     
+    setOriginalWords(newWords);
     setWords(newWords);
     setTileMarks({}); // Clear all markings when words change
+    setPuzzleDate(''); // Clear puzzle date since this is custom
     setIsEditing(false);
   };
 
   const handleEditCancel = () => {
-    setEditText(words.join(' '));
+    setEditText(originalWords.join(' '));
     setIsEditing(false);
   };
 
   const handleLoadTodaysPuzzle = async () => {
     setIsLoading(true);
     setSelectedPill('today');
+    const today = new Date().toISOString().split('T')[0];
     try {
       const todaysWords = await fetchPuzzleByDate();
+      setOriginalWords(todaysWords);
       setWords(todaysWords);
       setTileMarks({}); // Clear all markings when words change
       setEditText(todaysWords.join(' '));
+      setPuzzleDate(today);
     } catch (error) {
       console.error('Failed to load today\'s puzzle:', error);
       setSelectedPill(null);
@@ -155,17 +298,67 @@ export function ConnectionsGame() {
     if (!dateToUse) return;
     
     setIsLoading(true);
-    setSelectedPill('date');
+    const today = new Date().toISOString().split('T')[0];
+    
+    // If picking today's date, highlight "Today" button instead
+    if (dateToUse === today) {
+      setSelectedPill('today');
+    } else {
+      setSelectedPill('date');
+    }
+    
     try {
       const dateWords = await fetchPuzzleByDate(dateToUse);
+      setOriginalWords(dateWords);
       setWords(dateWords);
       setTileMarks({}); // Clear all markings when words change
       setEditText(dateWords.join(' '));
+      setPuzzleDate(dateToUse);
     } catch (error) {
       console.error('Failed to load puzzle for date:', error);
       setSelectedPill(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleShuffle = () => {
+    const shuffledWords = [...originalWords]; // Shuffle from original order
+    // Fisher-Yates shuffle algorithm
+    for (let i = shuffledWords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+    }
+    setWords(shuffledWords); // Only update display order, not original
+    // Keep tile marks but remap them to new positions
+    const newTileMarks: Record<number, Color[]> = {};
+    Object.entries(tileMarks).forEach(([oldIndex, colors]) => {
+      const oldWord = words[parseInt(oldIndex)];
+      const newIndex = shuffledWords.indexOf(oldWord);
+      if (newIndex !== -1) {
+        newTileMarks[newIndex] = colors;
+      }
+    });
+    setTileMarks(newTileMarks);
+  };
+
+  const handleReset = () => {
+    setTileMarks({});
+    setActiveColor('yellow');
+    setWords(originalWords); // Reset to original order
+  };
+
+  // Format date for display (e.g. "Aug 15")
+  const formatDateForDisplay = (dateString: string): string => {
+    if (!dateString) return "Pick Date 📅";
+    
+    try {
+      const date = new Date(dateString + 'T00:00:00'); // Ensure local timezone
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const day = date.getDate();
+      return `${month} ${day}`;
+    } catch {
+      return "Pick Date 📅";
     }
   };
 
@@ -175,7 +368,7 @@ export function ConnectionsGame() {
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-foreground">
-            Connections Helper
+            Connections Buddy 🥰
           </h1>
           <p className="text-muted-foreground">
             Pick a color, then tap tiles to mark.
@@ -209,7 +402,7 @@ export function ConnectionsGame() {
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
-              Pick Date 📅
+              {selectedPill === 'date' && puzzleDate ? formatDateForDisplay(puzzleDate) : "Pick Date 📅"}
             </Button>
             <Button 
               variant="ghost"
@@ -292,6 +485,26 @@ export function ConnectionsGame() {
               onClick={() => handleTileClick(index)}
             />
           ))}
+        </div>
+
+        {/* Game Actions */}
+        <div className="flex justify-between">
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={handleReset}
+            className="gap-1"
+          >
+            Reset 🧹
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={handleShuffle}
+            className="gap-1"
+          >
+            Shuffle 🎲
+          </Button>
         </div>
 
       </div>
