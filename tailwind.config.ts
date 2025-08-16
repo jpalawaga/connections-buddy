@@ -52,6 +52,24 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				connections: {
+					yellow: 'hsl(var(--connections-yellow))',
+					'yellow-dark': 'hsl(var(--connections-yellow-dark))',
+					green: 'hsl(var(--connections-green))',
+					'green-dark': 'hsl(var(--connections-green-dark))',
+					blue: 'hsl(var(--connections-blue))',
+					'blue-dark': 'hsl(var(--connections-blue-dark))',
+					purple: 'hsl(var(--connections-purple))',
+					'purple-dark': 'hsl(var(--connections-purple-dark))',
+					red: 'hsl(var(--connections-red))',
+					'red-dark': 'hsl(var(--connections-red-dark))'
+				},
+				tile: {
+					background: 'hsl(var(--tile-background))',
+					border: 'hsl(var(--tile-border))',
+					hover: 'hsl(var(--tile-hover))',
+					text: 'hsl(var(--tile-text))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
