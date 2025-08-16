@@ -48,11 +48,12 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
       className={cn(
         "relative border border-tile-border rounded-lg",
         "p-4 min-h-[80px] flex flex-col items-center justify-center",
-        "active:scale-95 transition-all duration-200",
+        "active:scale-95 transition-all duration-300 ease-out",
         "font-medium text-sm md:text-base",
         "shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50",
+        "transform hover:scale-[1.02]",
         !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
-        hasColors && "text-foreground hover:opacity-90"
+        hasColors && "text-foreground hover:opacity-90 animate-scale-in"
       )}
     >
       <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm">
