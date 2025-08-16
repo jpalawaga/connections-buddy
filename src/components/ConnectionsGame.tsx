@@ -69,7 +69,7 @@ export function ConnectionsGame() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedPill, setSelectedPill] = useState<'today' | 'date' | null>(null);
+  const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>('custom');
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -94,6 +94,18 @@ export function ConnectionsGame() {
   const handleEditStart = () => {
     setEditText(words.join(' '));
     setIsEditing(true);
+    setSelectedPill('custom');
+  };
+
+  const handleCustomPill = () => {
+    if (selectedPill === 'custom' && !isEditing) {
+      // If already selected and not editing, open editor
+      handleEditStart();
+    } else {
+      // Just select the pill
+      setSelectedPill('custom');
+      setIsEditing(false);
+    }
   };
 
   const handleEditSave = () => {
@@ -162,9 +174,8 @@ export function ConnectionsGame() {
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          {/* Individual Pill Buttons */}
+        {/* Pill Buttons */}
+        <div className="flex justify-center">
           <div className="flex gap-2">
             <Button 
               variant="ghost"
@@ -192,16 +203,20 @@ export function ConnectionsGame() {
             >
               Pick Date 📅
             </Button>
+            <Button 
+              variant="ghost"
+              size="sm" 
+              onClick={handleCustomPill}
+              disabled={isLoading}
+              className={`rounded-full px-3 py-1 text-xs transition-all border ${
+                selectedPill === 'custom' 
+                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
+              }`}
+            >
+              Custom...
+            </Button>
           </div>
-          
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={handleEditStart}
-            disabled={isEditing}
-          >
-            Edit Words
-          </Button>
         </div>
 
         {/* Color Swatches */}

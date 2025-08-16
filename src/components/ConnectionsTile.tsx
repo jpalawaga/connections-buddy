@@ -61,7 +61,7 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
         "active:scale-95 transition-all duration-300 ease-out",
         "font-medium",
         getTextSizeClass(word),
-        "shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50",
+        "shadow-sm hover:shadow-md focus:outline-none",
         "transform hover:scale-[1.02]",
         !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
         hasColors && "text-foreground hover:opacity-90 animate-scale-in"
