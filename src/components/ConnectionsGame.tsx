@@ -135,7 +135,7 @@ export function ConnectionsGame() {
             Connections Helper
           </h1>
           <p className="text-muted-foreground">
-            Tap colors to select, tap tiles to mark with active color
+            Pick a color, then tap tiles to mark.
           </p>
         </div>
 
@@ -154,7 +154,7 @@ export function ConnectionsGame() {
         {/* Action Buttons */}
         <div className="flex justify-between">
           <Button 
-            variant="outline" 
+            variant="secondary" 
             size="sm" 
             onClick={handleLoadTodaysPuzzle}
             disabled={isEditing || isLoading}
@@ -162,7 +162,7 @@ export function ConnectionsGame() {
             {isLoading ? "Loading..." : "Load Today's Puzzle"}
           </Button>
           <Button 
-            variant="outline" 
+            variant="secondary" 
             size="sm" 
             onClick={handleEditStart}
             disabled={isEditing}

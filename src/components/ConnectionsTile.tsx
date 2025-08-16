@@ -41,22 +41,33 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
   const backgroundStyle = getBackgroundStyle(markedColors);
   const hasColors = markedColors.length > 0;
   
+  // Determine text size based on word length (like NYT Connections)
+  const getTextSizeClass = (word: string) => {
+    const length = word.length;
+    if (length <= 4) return "text-base md:text-lg";
+    if (length <= 6) return "text-sm md:text-base";
+    if (length <= 8) return "text-xs md:text-sm";
+    if (length <= 10) return "text-xs";
+    return "text-[10px] md:text-xs";
+  };
+  
   return (
     <button
       onClick={onClick}
       style={backgroundStyle}
       className={cn(
         "relative border border-tile-border rounded-lg",
-        "p-4 min-h-[80px] flex flex-col items-center justify-center",
+        "p-2 min-h-[80px] flex flex-col items-center justify-center",
         "active:scale-95 transition-all duration-300 ease-out",
-        "font-medium text-sm md:text-base",
+        "font-medium",
+        getTextSizeClass(word),
         "shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50",
         "transform hover:scale-[1.02]",
         !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
         hasColors && "text-foreground hover:opacity-90 animate-scale-in"
       )}
     >
-      <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm">
+      <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm px-1">
         {word}
       </span>
     </button>
