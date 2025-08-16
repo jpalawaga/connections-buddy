@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ColorSwatch } from "./ColorSwatch";
 import { ConnectionsTile } from "./ConnectionsTile";
 
@@ -17,6 +19,9 @@ const COLORS: Color[] = ['yellow', 'green', 'blue', 'purple', 'red'];
 export function ConnectionsGame() {
   const [activeColor, setActiveColor] = useState<Color>('yellow');
   const [tileMarks, setTileMarks] = useState<Record<number, Color[]>>({});
+  const [words, setWords] = useState(SAMPLE_WORDS);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(SAMPLE_WORDS.join(' '));
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -36,6 +41,29 @@ export function ConnectionsGame() {
         return { ...prev, [tileIndex]: [...currentMarks, activeColor] };
       }
     });
+  };
+
+  const handleEditStart = () => {
+    setEditText(words.join(' '));
+    setIsEditing(true);
+  };
+
+  const handleEditSave = () => {
+    // Parse words from space or newline separated text
+    const newWords = editText
+      .split(/[\s\n]+/)
+      .map(word => word.trim().toUpperCase())
+      .filter(word => word.length > 0)
+      .slice(0, 16); // Limit to 16 words
+    
+    setWords(newWords);
+    setTileMarks({}); // Clear all markings when words change
+    setIsEditing(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditText(words.join(' '));
+    setIsEditing(false);
   };
 
   return (
@@ -63,16 +91,50 @@ export function ConnectionsGame() {
           ))}
         </div>
 
-        {/* Active Color Indicator */}
-        <div className="text-center">
+        {/* Active Color Indicator and Edit Button */}
+        <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
             Active: <span className="font-medium capitalize">{activeColor}</span>
           </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleEditStart}
+            disabled={isEditing}
+          >
+            Edit Words
+          </Button>
         </div>
+
+        {/* Word Editor */}
+        {isEditing && (
+          <div className="bg-card rounded-lg p-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">
+                Enter 16 words (space or newline separated):
+              </label>
+              <Textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                placeholder="Enter words separated by spaces or new lines..."
+                className="min-h-[120px]"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleEditCancel}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditSave}>
+                Save Words
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Game Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {SAMPLE_WORDS.map((word, index) => (
+          {words.map((word, index) => (
             <ConnectionsTile
               key={index}
               word={word}
