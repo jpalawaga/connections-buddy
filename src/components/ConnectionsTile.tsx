@@ -6,44 +6,58 @@ interface ConnectionsTileProps {
   onClick: () => void;
 }
 
-const colorDotClasses = {
-  yellow: 'bg-connections-yellow-dark',
-  green: 'bg-connections-green-dark',
-  blue: 'bg-connections-blue-dark',
-  purple: 'bg-connections-purple-dark',
-  red: 'bg-connections-red-dark',
+const colorClasses = {
+  yellow: 'hsl(var(--connections-yellow))',
+  green: 'hsl(var(--connections-green))',
+  blue: 'hsl(var(--connections-blue))',
+  purple: 'hsl(var(--connections-purple))',
+  red: 'hsl(var(--connections-red))',
+};
+
+const getBackgroundStyle = (colors: Array<'yellow' | 'green' | 'blue' | 'purple' | 'red'>) => {
+  if (colors.length === 0) return {};
+  if (colors.length === 1) {
+    return { backgroundColor: colorClasses[colors[0]] };
+  }
+  if (colors.length === 2) {
+    return {
+      background: `linear-gradient(to bottom, ${colorClasses[colors[0]]} 50%, ${colorClasses[colors[1]]} 50%)`
+    };
+  }
+  // For 3+ colors, split evenly
+  const percentage = 100 / colors.length;
+  const gradientStops = colors.map((color, index) => {
+    const start = index * percentage;
+    const end = (index + 1) * percentage;
+    return `${colorClasses[color]} ${start}% ${end}%`;
+  }).join(', ');
+  
+  return {
+    background: `linear-gradient(to bottom, ${gradientStops})`
+  };
 };
 
 export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTileProps) {
+  const backgroundStyle = getBackgroundStyle(markedColors);
+  const hasColors = markedColors.length > 0;
+  
   return (
     <button
       onClick={onClick}
+      style={backgroundStyle}
       className={cn(
-        "relative bg-tile-background border border-tile-border rounded-lg",
+        "relative border border-tile-border rounded-lg",
         "p-4 min-h-[80px] flex flex-col items-center justify-center",
-        "hover:bg-tile-hover active:scale-95 transition-all duration-200",
-        "text-tile-text font-medium text-sm md:text-base",
-        "shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+        "active:scale-95 transition-all duration-200",
+        "font-medium text-sm md:text-base",
+        "shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50",
+        !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
+        hasColors && "text-foreground hover:opacity-90"
       )}
     >
-      <span className="text-center leading-tight uppercase tracking-wide">
+      <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm">
         {word}
       </span>
-      
-      {/* Color dots */}
-      {markedColors.length > 0 && (
-        <div className="absolute top-1 right-1 flex gap-1">
-          {markedColors.map((color, index) => (
-            <div
-              key={`${color}-${index}`}
-              className={cn(
-                "w-2 h-2 rounded-full",
-                colorDotClasses[color]
-              )}
-            />
-          ))}
-        </div>
-      )}
     </button>
   );
 }
