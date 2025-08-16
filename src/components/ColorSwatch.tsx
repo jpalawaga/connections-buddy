@@ -23,7 +23,7 @@ export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
         "hover:scale-105 active:scale-95",
         colorClasses[color],
         isActive 
-          ? "ring-4 ring-primary ring-opacity-50 shadow-lg scale-110" 
+          ? "ring-2 ring-foreground ring-offset-1 shadow-md" 
           : "shadow-sm hover:shadow-md"
       )}
       aria-label={`Select ${color} color`}
