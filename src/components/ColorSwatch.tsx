@@ -46,7 +46,7 @@ export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
         colors.bg,
         isActive ? colors.borderSelected : colors.borderUnselected,
         isActive 
-          ? "shadow-md scale-110" 
+          ? "shadow-md scale-105" 
           : "shadow-sm hover:shadow-md"
       )}
       aria-label={`Select ${color} color`}

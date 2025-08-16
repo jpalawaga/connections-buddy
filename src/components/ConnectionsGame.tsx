@@ -278,6 +278,7 @@ export function ConnectionsGame() {
     setIsLoading(true);
     setSelectedPill('today');
     const today = new Date().toISOString().split('T')[0];
+    setSelectedDate(today); // Keep date state in sync
     try {
       const todaysWords = await fetchPuzzleByDate();
       setOriginalWords(todaysWords);
@@ -421,7 +422,7 @@ export function ConnectionsGame() {
         </div>
 
         {/* Color Swatches */}
-        <div className="flex justify-between gap-2">
+        <div className="flex justify-between gap-3 md:gap-4">
           {COLORS.map(color => (
             <ColorSwatch
               key={color}

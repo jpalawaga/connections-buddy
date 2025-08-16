@@ -41,28 +41,46 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
   const backgroundStyle = getBackgroundStyle(markedColors);
   const hasColors = markedColors.length > 0;
   
-  // Determine text size based on word length (like NYT Connections)
-  const getTextSizeClass = (word: string) => {
-    const length = word.length;
-    if (length <= 4) return "text-base md:text-lg";
-    if (length <= 6) return "text-sm md:text-base";
-    if (length <= 8) return "text-xs md:text-sm";
-    if (length <= 10) return "text-xs";
-    return "text-[10px] md:text-xs";
+  // Smart text sizing based on estimated character width
+  const getTextSizeStyle = (word: string) => {
+    // More accurate character width estimation
+    const getCharWidth = (char: string) => {
+      // Wide characters
+      if ('MWQG'.includes(char)) return 1.2;
+      // Narrow characters  
+      if ('ILJlij1'.includes(char)) return 0.5;
+      // Medium characters
+      if ('ABCDEFHKNOPRSTUVXYZabcdefhknoprstuvxyz'.includes(char)) return 0.9;
+      // Default
+      return 0.8;
+    };
+    
+    const estimatedWidth = word.split('').reduce((sum, char) => sum + getCharWidth(char), 0);
+    
+    // Calculate base size and responsive scaling separately
+    const baseSize = Math.max(0.7, Math.min(1.2, 8 / estimatedWidth)); // rem units
+    const vwSize = Math.max(1.2, Math.min(3, 12 / estimatedWidth)); // vw units
+    
+    return {
+      fontSize: `clamp(${baseSize * 0.8}rem, ${vwSize}vw, ${baseSize}rem)`
+    };
   };
   
   return (
     <button
       onClick={onClick}
-      style={backgroundStyle}
+      style={{
+        ...backgroundStyle,
+        ...getTextSizeStyle(word)
+      }}
       className={cn(
         "relative border border-tile-border rounded-lg",
         "p-2 min-h-[80px] flex flex-col items-center justify-center",
         "active:scale-95 transition-all duration-300 ease-out",
         "font-medium",
-        getTextSizeClass(word),
         "shadow-sm hover:shadow-md focus:outline-none",
         "transform hover:scale-[1.02]",
+        "@container", // Enable container queries
         !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
         hasColors && "text-foreground hover:opacity-90 animate-scale-in"
       )}
