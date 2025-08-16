@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ColorSwatch } from "./ColorSwatch";
@@ -70,6 +70,14 @@ export function ConnectionsGame() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>('custom');
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (showDatePicker && dateInputRef.current) {
+      dateInputRef.current.showPicker?.();
+      setShowDatePicker(false);
+    }
+  }, [showDatePicker]);
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -142,17 +150,17 @@ export function ConnectionsGame() {
     }
   };
 
-  const handleDatePick = async () => {
-    if (!selectedDate) return;
+  const handleDatePick = async (date?: string) => {
+    const dateToUse = date || selectedDate;
+    if (!dateToUse) return;
     
     setIsLoading(true);
     setSelectedPill('date');
     try {
-      const dateWords = await fetchPuzzleByDate(selectedDate);
+      const dateWords = await fetchPuzzleByDate(dateToUse);
       setWords(dateWords);
       setTileMarks({}); // Clear all markings when words change
       setEditText(dateWords.join(' '));
-      setShowDatePicker(false);
     } catch (error) {
       console.error('Failed to load puzzle for date:', error);
       setSelectedPill(null);
@@ -257,33 +265,22 @@ export function ConnectionsGame() {
           </div>
         )}
 
-        {/* Date Picker */}
-        {showDatePicker && (
-          <div className="bg-card rounded-lg p-4 space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-2">
-                Select a date to load that day's Connections puzzle:
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full p-2 border border-border rounded-md bg-background text-foreground"
-                min="2023-06-12"
-                max={new Date().toISOString().split('T')[0]}
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowDatePicker(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleDatePick} disabled={!selectedDate}>
-                Load Puzzle
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Hidden Date Input for Picker */}
+        <input
+          ref={dateInputRef}
+          type="date"
+          value={selectedDate}
+          onChange={(e) => {
+            const newDate = e.target.value;
+            setSelectedDate(newDate);
+            if (newDate) {
+              handleDatePick(newDate);
+            }
+          }}
+          className="sr-only"
+          min="2023-06-12"
+          max={new Date().toISOString().split('T')[0]}
+        />
 
         {/* Game Grid */}
         <div className="grid grid-cols-4 gap-3">
