@@ -19,7 +19,7 @@ export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
     <button
       onClick={onClick}
       className={cn(
-        "w-12 h-12 rounded-lg border-2 transition-all duration-200 transform",
+        "w-full h-6 rounded-md border-2 transition-all duration-200 transform",
         "hover:scale-105 active:scale-95",
         colorClasses[color],
         isActive 
