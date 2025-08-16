@@ -47,9 +47,9 @@ const parseNYTData = (data: NYTConnectionsData): string[] => {
     .map(card => card.content.toUpperCase());
 };
 
-const fetchTodaysPuzzle = async (): Promise<string[]> => {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-  const url = `https://proxy.corsfix.com/?https://www.nytimes.com/svc/connections/v2/${today}.json`;
+const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
+  const puzzleDate = date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const url = `https://proxy.corsfix.com/?https://www.nytimes.com/svc/connections/v2/${puzzleDate}.json`;
   
   const response = await fetch(url);
   if (!response.ok) {
@@ -67,6 +67,8 @@ export function ConnectionsGame() {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(SAMPLE_WORDS.join(' '));
   const [isLoading, setIsLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -114,12 +116,30 @@ export function ConnectionsGame() {
   const handleLoadTodaysPuzzle = async () => {
     setIsLoading(true);
     try {
-      const todaysWords = await fetchTodaysPuzzle();
+      const todaysWords = await fetchPuzzleByDate();
       setWords(todaysWords);
       setTileMarks({}); // Clear all markings when words change
       setEditText(todaysWords.join(' '));
     } catch (error) {
       console.error('Failed to load today\'s puzzle:', error);
+      // Could show a toast notification here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDatePick = async () => {
+    if (!selectedDate) return;
+    
+    setIsLoading(true);
+    try {
+      const dateWords = await fetchPuzzleByDate(selectedDate);
+      setWords(dateWords);
+      setTileMarks({}); // Clear all markings when words change
+      setEditText(dateWords.join(' '));
+      setShowDatePicker(false);
+    } catch (error) {
+      console.error('Failed to load puzzle for date:', error);
       // Could show a toast notification here
     } finally {
       setIsLoading(false);
@@ -139,6 +159,40 @@ export function ConnectionsGame() {
           </p>
         </div>
 
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center">
+          {/* Pill-style Date Buttons */}
+          <div className="flex rounded-full border border-border bg-muted p-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleLoadTodaysPuzzle}
+              disabled={isEditing || isLoading}
+              className="rounded-full px-4 py-1 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              {isLoading ? "Loading..." : "Today"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowDatePicker(true)}
+              disabled={isEditing || isLoading}
+              className="rounded-full px-4 py-1 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Pick Date 📅
+            </Button>
+          </div>
+          
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={handleEditStart}
+            disabled={isEditing}
+          >
+            Edit Words
+          </Button>
+        </div>
+
         {/* Color Swatches */}
         <div className="flex justify-between gap-2">
           {COLORS.map(color => (
@@ -149,26 +203,6 @@ export function ConnectionsGame() {
               onClick={() => setActiveColor(color)}
             />
           ))}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-between">
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={handleLoadTodaysPuzzle}
-            disabled={isEditing || isLoading}
-          >
-            {isLoading ? "Loading..." : "Load Today's Puzzle"}
-          </Button>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={handleEditStart}
-            disabled={isEditing}
-          >
-            Edit Words
-          </Button>
         </div>
 
         {/* Word Editor */}
@@ -192,6 +226,34 @@ export function ConnectionsGame() {
               </Button>
               <Button onClick={handleEditSave}>
                 Save Words
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Date Picker */}
+        {showDatePicker && (
+          <div className="bg-card rounded-lg p-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">
+                Select a date to load that day's Connections puzzle:
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full p-2 border border-border rounded-md bg-background text-foreground"
+                min="2023-06-12"
+                max={new Date().toISOString().split('T')[0]}
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowDatePicker(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleDatePick} disabled={!selectedDate}>
+                Load Puzzle
               </Button>
             </div>
           </div>

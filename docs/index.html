@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no" />
     <title>NYT Connections Buddy</title>
     <meta name="description" content="A mobile-first tool to help solve NYT Connections puzzles with color-coded marking system" />
     <meta name="author" content="James Palawaga" />
@@ -11,8 +11,32 @@
     <meta property="og:description" content="A mobile-first tool to help solve NYT Connections puzzles with color-coded marking system" />
     <meta property="og:type" content="website" />
 
-    <script type="module" crossorigin src="/assets/index-hNnT8Xsg.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-fQfBU2hc.css">
+    <style>
+      * {
+        touch-action: manipulation;
+      }
+      
+      html, body {
+        overflow-x: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        touch-action: manipulation;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-BYurxBo7.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CzQojsBz.css">
   </head>
 
   <body>
