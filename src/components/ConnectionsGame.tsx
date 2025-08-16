@@ -167,27 +167,27 @@ export function ConnectionsGame() {
           {/* Individual Pill Buttons */}
           <div className="flex gap-2">
             <Button 
-              variant="outline"
+              variant="ghost"
               size="sm" 
               onClick={handleLoadTodaysPuzzle}
               disabled={isEditing || isLoading}
-              className={`rounded-full px-3 py-1 text-xs transition-all ${
+              className={`rounded-full px-3 py-1 text-xs transition-all border ${
                 selectedPill === 'today' 
                   ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
-                  : 'hover:bg-muted'
+                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
               {isLoading && selectedPill === 'today' ? "Loading..." : "Today"}
             </Button>
             <Button 
-              variant="outline"
+              variant="ghost"
               size="sm" 
               onClick={() => setShowDatePicker(true)}
               disabled={isEditing || isLoading}
-              className={`rounded-full px-3 py-1 text-xs transition-all ${
+              className={`rounded-full px-3 py-1 text-xs transition-all border ${
                 selectedPill === 'date' 
                   ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
-                  : 'hover:bg-muted'
+                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
               Pick Date 📅

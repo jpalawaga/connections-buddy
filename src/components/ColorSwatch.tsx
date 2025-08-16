@@ -7,23 +7,46 @@ interface ColorSwatchProps {
 }
 
 const colorClasses = {
-  yellow: 'bg-connections-yellow border-connections-yellow-dark',
-  green: 'bg-connections-green border-connections-green-dark',
-  blue: 'bg-connections-blue border-connections-blue-dark',
-  purple: 'bg-connections-purple border-connections-purple-dark',
-  red: 'bg-connections-red border-connections-red-dark',
+  yellow: {
+    bg: 'bg-connections-yellow',
+    borderUnselected: 'border-connections-yellow',
+    borderSelected: 'border-connections-yellow-dark'
+  },
+  green: {
+    bg: 'bg-connections-green',
+    borderUnselected: 'border-connections-green',
+    borderSelected: 'border-connections-green-dark'
+  },
+  blue: {
+    bg: 'bg-connections-blue',
+    borderUnselected: 'border-connections-blue',
+    borderSelected: 'border-connections-blue-dark'
+  },
+  purple: {
+    bg: 'bg-connections-purple',
+    borderUnselected: 'border-connections-purple',
+    borderSelected: 'border-connections-purple-dark'
+  },
+  red: {
+    bg: 'bg-connections-red',
+    borderUnselected: 'border-connections-red',
+    borderSelected: 'border-connections-red-dark'
+  },
 };
 
 export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
+  const colors = colorClasses[color];
+  
   return (
     <button
       onClick={onClick}
       className={cn(
-        "w-full h-6 rounded-md border-2 transition-all duration-200 transform",
+        "w-full h-8 rounded-md border-2 transition-all duration-200 transform",
         "hover:scale-105 active:scale-95",
-        colorClasses[color],
+        colors.bg,
+        isActive ? colors.borderSelected : colors.borderUnselected,
         isActive 
-          ? "ring-2 ring-foreground ring-offset-1 shadow-md" 
+          ? "shadow-md scale-110" 
           : "shadow-sm hover:shadow-md"
       )}
       aria-label={`Select ${color} color`}
