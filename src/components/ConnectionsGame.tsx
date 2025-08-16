@@ -69,6 +69,7 @@ export function ConnectionsGame() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedPill, setSelectedPill] = useState<'today' | 'date' | null>(null);
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -115,6 +116,7 @@ export function ConnectionsGame() {
 
   const handleLoadTodaysPuzzle = async () => {
     setIsLoading(true);
+    setSelectedPill('today');
     try {
       const todaysWords = await fetchPuzzleByDate();
       setWords(todaysWords);
@@ -122,7 +124,7 @@ export function ConnectionsGame() {
       setEditText(todaysWords.join(' '));
     } catch (error) {
       console.error('Failed to load today\'s puzzle:', error);
-      // Could show a toast notification here
+      setSelectedPill(null);
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +134,7 @@ export function ConnectionsGame() {
     if (!selectedDate) return;
     
     setIsLoading(true);
+    setSelectedPill('date');
     try {
       const dateWords = await fetchPuzzleByDate(selectedDate);
       setWords(dateWords);
@@ -140,7 +143,7 @@ export function ConnectionsGame() {
       setShowDatePicker(false);
     } catch (error) {
       console.error('Failed to load puzzle for date:', error);
-      // Could show a toast notification here
+      setSelectedPill(null);
     } finally {
       setIsLoading(false);
     }
@@ -161,23 +164,31 @@ export function ConnectionsGame() {
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center">
-          {/* Pill-style Date Buttons */}
-          <div className="flex rounded-full border border-border bg-muted p-1">
+          {/* Individual Pill Buttons */}
+          <div className="flex gap-2">
             <Button 
-              variant="ghost" 
+              variant="outline"
               size="sm" 
               onClick={handleLoadTodaysPuzzle}
               disabled={isEditing || isLoading}
-              className="rounded-full px-4 py-1 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className={`rounded-full px-3 py-1 text-xs transition-all ${
+                selectedPill === 'today' 
+                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  : 'hover:bg-muted'
+              }`}
             >
-              {isLoading ? "Loading..." : "Today"}
+              {isLoading && selectedPill === 'today' ? "Loading..." : "Today"}
             </Button>
             <Button 
-              variant="ghost" 
+              variant="outline"
               size="sm" 
               onClick={() => setShowDatePicker(true)}
               disabled={isEditing || isLoading}
-              className="rounded-full px-4 py-1 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className={`rounded-full px-3 py-1 text-xs transition-all ${
+                selectedPill === 'date' 
+                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  : 'hover:bg-muted'
+              }`}
             >
               Pick Date 📅
             </Button>
@@ -271,12 +282,6 @@ export function ConnectionsGame() {
           ))}
         </div>
 
-        {/* Instructions */}
-        <div className="bg-card rounded-lg p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            Select a color above, then tap tiles to mark them. Tap marked tiles again to remove that color.
-          </p>
-        </div>
       </div>
     </div>
   );
