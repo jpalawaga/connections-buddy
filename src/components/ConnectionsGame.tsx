@@ -102,7 +102,6 @@ const getCachedPuzzle = (date: string): string[] | null => {
   const puzzle = cache[date];
   
   if (puzzle) {
-    console.log(`Loading puzzle for ${date} from cache`);
     return puzzle.words;
   }
   
@@ -117,7 +116,6 @@ const cachePuzzle = (date: string, words: string[]) => {
     fetchedAt: new Date().toISOString()
   };
   savePuzzleCache(cache);
-  console.log(`Cached puzzle for ${date}`);
 };
 
 const parseNYTData = (data: NYTConnectionsData): string[] => {
@@ -143,7 +141,6 @@ const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
   }
   
   // Fetch from API if not in cache
-  console.log(`Fetching puzzle for ${puzzleDate} from API`);
   const url = `https://proxy.corsfix.com/?https://www.nytimes.com/svc/connections/v2/${puzzleDate}.json`;
   
   const response = await fetch(url);
@@ -198,7 +195,7 @@ export function ConnectionsGame() {
       dateInputRef.current.showPicker?.();
       setShowDatePicker(false);
     }
-  }, [showDatePicker]);
+  }, [showDatePicker, selectedDate, selectedPill]);
 
   // Function to get current game state
   const getCurrentGameState = useCallback((): GameState => ({
@@ -288,7 +285,7 @@ export function ConnectionsGame() {
       setPuzzleDate(today);
     } catch (error) {
       console.error('Failed to load today\'s puzzle:', error);
-      setSelectedPill(null);
+      setSelectedPill('custom'); // Reset to custom on error
     } finally {
       setIsLoading(false);
     }
@@ -317,7 +314,7 @@ export function ConnectionsGame() {
       setPuzzleDate(dateToUse);
     } catch (error) {
       console.error('Failed to load puzzle for date:', error);
-      setSelectedPill(null);
+      setSelectedPill('custom'); // Reset to custom on error
     } finally {
       setIsLoading(false);
     }
