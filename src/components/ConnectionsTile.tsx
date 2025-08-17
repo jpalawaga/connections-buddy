@@ -69,6 +69,13 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
   return (
     <button
       onClick={onClick}
+      onMouseDown={(e) => {
+        // Prevent focus on click to avoid Firefox focus border flash
+        // Use setTimeout to blur after click processing to maintain responsiveness
+        setTimeout(() => {
+          e.currentTarget.blur();
+        }, 0);
+      }}
       style={{
         ...backgroundStyle,
         ...getTextSizeStyle(word)
@@ -76,13 +83,17 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
       className={cn(
         "relative border border-tile-border rounded-lg",
         "p-2 min-h-[80px] flex flex-col items-center justify-center",
-        "active:scale-95 transition-all duration-300 ease-out",
+        "transition-all duration-200 ease-out",
         "font-medium",
-        "shadow-sm hover:shadow-md focus:outline-none",
-        "transform hover:scale-[1.02]",
+        "shadow-sm focus:outline-none focus-visible:outline-none focus-within:outline-none",
+        "transform",
+        // Mobile Safari safe touch interactions
+        "touch-manipulation",
+        "select-none",
+        "connections-tile", // Custom class for mobile-safe hover
         "@container", // Enable container queries
-        !hasColors && "bg-tile-background hover:bg-tile-hover text-tile-text",
-        hasColors && "text-foreground hover:opacity-90 animate-scale-in"
+        !hasColors && "bg-tile-background text-tile-text",
+        hasColors && "text-foreground animate-scale-in"
       )}
     >
       <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm px-1">

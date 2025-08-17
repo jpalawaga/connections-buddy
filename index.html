@@ -34,6 +34,127 @@
         overflow-x: hidden;
         touch-action: manipulation;
       }
+
+      /* Mobile Safari touch interaction fixes */
+      .connections-tile {
+        -webkit-tap-highlight-color: transparent;
+        /* Firefox-specific fixes for focus/outline flash */
+        outline: none !important;
+        border-style: solid !important;
+        box-sizing: border-box !important;
+      }
+      
+      .connections-tile:focus,
+      .connections-tile:focus-visible,
+      .connections-tile:focus-within {
+        outline: none !important;
+        box-shadow: none !important;
+        border-width: 1px !important;
+      }
+      
+      .connections-tile::-moz-focus-inner {
+        border: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Additional Firefox button reset */
+      .connections-tile {
+        -moz-appearance: none !important;
+        background-clip: padding-box !important;
+      }
+      
+      /* Prevent any default button focus styles in Firefox */
+      @-moz-document url-prefix() {
+        .connections-tile {
+          border: 1px solid hsl(var(--tile-border)) !important;
+          user-select: none !important;
+        }
+        
+        .connections-tile:focus,
+        .connections-tile:active {
+          border: 1px solid hsl(var(--tile-border)) !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        
+        /* Prevent Firefox from showing any focus indicators during interaction */
+        .connections-tile:focus:not(:focus-visible) {
+          outline: none !important;
+        }
+      }
+      
+      /* Only apply hover effects on devices that support precise hover */
+      @media (hover: hover) and (pointer: fine) {
+        .connections-tile:hover {
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+          transform: scale(1.02);
+        }
+        
+        .connections-swatch:hover {
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+          transform: scale(1.05);
+        }
+        
+        .connections-pill:hover:not(:disabled) {
+          background-color: #ebe8e8 !important;
+        }
+        
+        .connections-pill.bg-blue-600:hover:not(:disabled) {
+          background-color: #1d4ed8 !important;
+        }
+      }
+      
+      /* Mobile Safari specific fixes for pill button state rendering */
+      @supports (-webkit-touch-callout: none) {
+        .connections-pill {
+          /* Force hardware acceleration for proper rendering */
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+        
+        .connections-pill.bg-blue-600 {
+          background-color: #2563eb !important;
+          border-color: #2563eb !important;
+          color: white !important;
+        }
+        
+        .connections-pill:not(.bg-blue-600) {
+          background-color: #f0eded !important;
+          border-color: #e0dede !important;
+          color: #555 !important;
+        }
+      }
+      
+      /* Safe active states for all devices with quick release */
+      .connections-tile:active {
+        transform: scale(0.98);
+        transition-duration: 75ms;
+      }
+      
+      .connections-swatch:active {
+        transform: scale(0.95);
+        transition-duration: 75ms;
+      }
+      
+      .connections-pill:active {
+        transition-duration: 75ms;
+      }
+      
+      /* Force release of stuck states on touch devices */
+      @media (hover: none) {
+        .connections-tile,
+        .connections-swatch,
+        .connections-pill {
+          transform: none !important;
+        }
+        
+        .connections-tile:not(.animate-scale-in),
+        .connections-swatch:not(.scale-105) {
+          transform: none !important;
+        }
+      }
     </style>
   </head>
 

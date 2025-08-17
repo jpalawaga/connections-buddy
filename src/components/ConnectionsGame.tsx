@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { ColorSwatch } from "./ColorSwatch";
 import { ConnectionsTile } from "./ConnectionsTile";
 
@@ -187,7 +189,7 @@ export function ConnectionsGame() {
   const [selectedDate, setSelectedDate] = useState(cachedState?.selectedDate || cachedState?.puzzleDate || '');
   const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>(getCurrentPillState());
   const [puzzleDate, setPuzzleDate] = useState(cachedState?.puzzleDate || '');
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   // Function to get current game state
   const getCurrentGameState = useCallback((): GameState => ({
@@ -312,6 +314,15 @@ export function ConnectionsGame() {
     }
   };
 
+  const handleCalendarDateSelect = async (date: Date | undefined) => {
+    if (!date) return;
+    
+    const dateString = date.toISOString().split('T')[0];
+    setSelectedDate(dateString);
+    setIsDatePickerOpen(false); // Close the popover
+    await handleDatePick(dateString);
+  };
+
   const handleShuffle = () => {
     const shuffledWords = [...originalWords]; // Shuffle from original order
     // Fisher-Yates shuffle algorithm
@@ -369,40 +380,59 @@ export function ConnectionsGame() {
         <div className="flex justify-center">
           <div className="flex gap-2">
             <Button 
+              key={`today-${selectedPill}`}
               variant="ghost"
               size="sm" 
               onClick={handleLoadTodaysPuzzle}
               disabled={isEditing || isLoading}
-              className={`rounded-full px-3 py-1 text-xs transition-all border ${
+              className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
                 selectedPill === 'today' 
-                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
-                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
+                  ? 'bg-blue-600 border-blue-600 text-white' 
+                  : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
               }`}
             >
               {isLoading && selectedPill === 'today' ? "Loading..." : "Today"}
             </Button>
+            <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  key={`date-${selectedPill}-${puzzleDate}`}
+                  variant="ghost"
+                  size="sm" 
+                  disabled={isEditing || isLoading}
+                  className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
+                    selectedPill === 'date' 
+                      ? 'bg-blue-600 border-blue-600 text-white' 
+                      : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
+                  }`}
+                >
+                  {selectedPill === 'date' && puzzleDate ? formatDateForDisplay(puzzleDate) : "Pick Date 📅"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
+                  onSelect={handleCalendarDateSelect}
+                  disabled={(date) => {
+                    const today = new Date();
+                    const minDate = new Date('2023-06-12');
+                    return date > today || date < minDate;
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
             <Button 
-              variant="ghost"
-              size="sm" 
-              onClick={() => dateInputRef.current?.click()}
-              disabled={isEditing || isLoading}
-              className={`rounded-full px-3 py-1 text-xs transition-all border ${
-                selectedPill === 'date' 
-                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
-                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
-              }`}
-            >
-              {selectedPill === 'date' && puzzleDate ? formatDateForDisplay(puzzleDate) : "Pick Date 📅"}
-            </Button>
-            <Button 
+              key={`custom-${selectedPill}`}
               variant="ghost"
               size="sm" 
               onClick={handleCustomPill}
               disabled={isLoading}
-              className={`rounded-full px-3 py-1 text-xs transition-all border ${
+              className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
                 selectedPill === 'custom' 
-                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
-                  : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
+                  ? 'bg-blue-600 border-blue-600 text-white' 
+                  : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
               }`}
             >
               Custom...
@@ -448,22 +478,7 @@ export function ConnectionsGame() {
           </div>
         )}
 
-        {/* Hidden Date Input for Picker */}
-        <input
-          ref={dateInputRef}
-          type="date"
-          value={selectedDate}
-          onChange={(e) => {
-            const newDate = e.target.value;
-            setSelectedDate(newDate);
-            if (newDate) {
-              handleDatePick(newDate);
-            }
-          }}
-          className="sr-only"
-          min="2023-06-12"
-          max={new Date().toISOString().split('T')[0]}
-        />
+
 
         {/* Game Grid */}
         <div className="grid grid-cols-4 gap-3">

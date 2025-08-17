@@ -42,12 +42,13 @@ export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
       onClick={onClick}
       className={cn(
         "w-full h-8 rounded-md border-2 transition-all duration-200 transform",
-        "hover:scale-105 active:scale-95",
+        "touch-manipulation select-none",
+        "connections-swatch", // Custom class for mobile-safe interactions
         colors.bg,
         isActive ? colors.borderSelected : colors.borderUnselected,
         isActive 
           ? "shadow-md scale-105" 
-          : "shadow-sm hover:shadow-md"
+          : "shadow-sm"
       )}
       aria-label={`Select ${color} color`}
     />
