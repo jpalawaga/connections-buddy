@@ -45,11 +45,11 @@ export function ColorSwatch({ color, isActive, onClick, onColorSwap }: ColorSwat
   const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Only start drag after a long press (500ms)
+    // Only start drag after a long press (200ms)
     dragTimeoutRef.current = setTimeout(() => {
       setIsDragging(true);
       e.preventDefault();
-    }, 500);
+    }, 200);
   };
   
   const handlePointerUp = (e: React.PointerEvent) => {
