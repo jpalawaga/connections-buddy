@@ -420,6 +420,32 @@ export function ConnectionsGame() {
     setWords(originalWords); // Reset to original order
   };
 
+  const handleColorSwap = (fromColor: Color, toColor: Color) => {
+    if (fromColor === toColor) return;
+    
+    setTileMarks(prev => {
+      const newTileMarks: Record<number, Color[]> = {};
+      
+      Object.entries(prev).forEach(([tileIndex, colors]) => {
+        const newColors = colors.map(color => {
+          if (color === fromColor) return toColor;
+          if (color === toColor) return fromColor;
+          return color;
+        });
+        newTileMarks[parseInt(tileIndex)] = newColors;
+      });
+      
+      return newTileMarks;
+    });
+    
+    // Also swap active color if it matches one of the swapped colors
+    if (activeColor === fromColor) {
+      setActiveColor(toColor);
+    } else if (activeColor === toColor) {
+      setActiveColor(fromColor);
+    }
+  };
+
   // Format date for display (e.g. "Aug 15")
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return "Pick Date 📅";
@@ -559,6 +585,7 @@ export function ConnectionsGame() {
               color={color}
               isActive={activeColor === color}
               onClick={() => setActiveColor(color)}
+              onColorSwap={handleColorSwap}
             />
           ))}
         </div>

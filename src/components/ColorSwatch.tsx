@@ -1,9 +1,13 @@
 import { cn } from "@/lib/utils";
+import { useState, useRef } from "react";
+
+type Color = 'yellow' | 'green' | 'blue' | 'purple' | 'red';
 
 interface ColorSwatchProps {
-  color: 'yellow' | 'green' | 'blue' | 'purple' | 'red';
+  color: Color;
   isActive: boolean;
   onClick: () => void;
+  onColorSwap: (fromColor: Color, toColor: Color) => void;
 }
 
 const colorClasses = {
@@ -34,12 +38,90 @@ const colorClasses = {
   },
 };
 
-export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
+export function ColorSwatch({ color, isActive, onClick, onColorSwap }: ColorSwatchProps) {
   const colors = colorClasses[color];
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
+  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Only start drag after a long press (500ms)
+    dragTimeoutRef.current = setTimeout(() => {
+      setIsDragging(true);
+      e.preventDefault();
+    }, 500);
+  };
+  
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragTimeoutRef.current) {
+      clearTimeout(dragTimeoutRef.current);
+      dragTimeoutRef.current = null;
+    }
+    
+    if (!isDragging) {
+      // Short press - normal click behavior
+      onClick();
+    }
+    
+    setIsDragging(false);
+  };
+  
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragTimeoutRef.current) {
+      // Cancel drag if user moves before long press completes
+      clearTimeout(dragTimeoutRef.current);
+      dragTimeoutRef.current = null;
+    }
+  };
+  
+  const handlePointerEnter = (e: React.PointerEvent) => {
+    // Check if something is being dragged over this swatch
+    if (e.pointerType !== 'mouse' && e.pressure > 0) {
+      setIsDropTarget(true);
+    }
+  };
+  
+  const handlePointerLeave = () => {
+    setIsDropTarget(false);
+  };
+  
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', color);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDropTarget(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDropTarget(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedColor = e.dataTransfer.getData('text/plain') as Color;
+    if (draggedColor && draggedColor !== color) {
+      onColorSwap(draggedColor, color);
+    }
+    setIsDropTarget(false);
+  };
   
   return (
     <button
       onClick={onClick}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      draggable={isDragging}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       className={cn(
         "w-full h-8 rounded-md border-2 transition-all duration-200 transform",
         "touch-manipulation select-none",
@@ -48,9 +130,14 @@ export function ColorSwatch({ color, isActive, onClick }: ColorSwatchProps) {
         isActive ? colors.borderSelected : colors.borderUnselected,
         isActive 
           ? "shadow-md scale-105" 
-          : "shadow-sm"
+          : "shadow-sm",
+        isDragging && "scale-110 shadow-lg opacity-80 z-10",
+        isDropTarget && "ring-2 ring-white ring-opacity-50 scale-110"
       )}
-      aria-label={`Select ${color} color`}
+      aria-label={`Select ${color} color. Press and hold to drag and swap colors.`}
+      style={{
+        cursor: isDragging ? 'grabbing' : 'pointer'
+      }}
     />
   );
 }
