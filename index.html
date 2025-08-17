@@ -17,14 +17,18 @@
       }
       
       html, body {
+        margin: 0;
+        padding: 0;
         overflow-x: hidden;
-        position: fixed;
         width: 100%;
         height: 100%;
         touch-action: manipulation;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
         -webkit-tap-highlight-color: transparent;
+        /* Prevent iOS Safari bouncing */
+        overflow: hidden;
+        position: fixed;
       }
 
       #root {
@@ -33,6 +37,9 @@
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: manipulation;
+        /* Ensure content fits properly */
+        display: flex;
+        flex-direction: column;
       }
 
       /* Mobile Safari touch interaction fixes */
@@ -153,6 +160,27 @@
         .connections-tile:not(.animate-scale-in),
         .connections-swatch:not(.scale-105) {
           transform: none !important;
+        }
+      }
+      
+      /* Mobile-specific layout fixes */
+      @media (max-width: 768px) {
+        body {
+          /* Prevent iOS Safari address bar from causing layout shifts */
+          height: 100vh;
+          height: 100dvh; /* Dynamic viewport height for modern browsers */
+        }
+        
+        #root {
+          height: 100vh;
+          height: 100dvh;
+          /* Prevent overscrolling */
+          overscroll-behavior: none;
+        }
+        
+        /* Ensure no extra padding/margin causes overflow */
+        * {
+          box-sizing: border-box;
         }
       }
     </style>

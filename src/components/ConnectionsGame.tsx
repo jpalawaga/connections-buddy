@@ -36,6 +36,16 @@ interface GameState {
   lastUpdated: string;
 }
 
+interface PuzzleState {
+  tileMarks: Record<number, Color[]>;
+  activeColor: Color;
+  lastUpdated: string;
+}
+
+interface PuzzleStateCache {
+  [puzzleDate: string]: PuzzleState;
+}
+
 interface CachedPuzzle {
   date: string;
   words: string[];
@@ -58,6 +68,7 @@ const COLORS: Color[] = ['yellow', 'green', 'blue', 'purple', 'red'];
 
 const STORAGE_KEY = 'connections-buddy-game-state';
 const PUZZLE_CACHE_KEY = 'connections-buddy-puzzle-cache';
+const PUZZLE_STATE_CACHE_KEY = 'connections-buddy-puzzle-states';
 
 const saveGameState = (state: GameState) => {
   try {
@@ -118,6 +129,41 @@ const cachePuzzle = (date: string, words: string[]) => {
     fetchedAt: new Date().toISOString()
   };
   savePuzzleCache(cache);
+};
+
+const loadPuzzleStateCache = (): PuzzleStateCache => {
+  try {
+    const saved = localStorage.getItem(PUZZLE_STATE_CACHE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load puzzle state cache:', error);
+  }
+  return {};
+};
+
+const savePuzzleStateCache = (cache: PuzzleStateCache) => {
+  try {
+    localStorage.setItem(PUZZLE_STATE_CACHE_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.warn('Failed to save puzzle state cache:', error);
+  }
+};
+
+const savePuzzleState = (puzzleDate: string, tileMarks: Record<number, Color[]>, activeColor: Color) => {
+  const cache = loadPuzzleStateCache();
+  cache[puzzleDate] = {
+    tileMarks,
+    activeColor,
+    lastUpdated: new Date().toISOString()
+  };
+  savePuzzleStateCache(cache);
+};
+
+const loadPuzzleState = (puzzleDate: string): PuzzleState | null => {
+  const cache = loadPuzzleStateCache();
+  return cache[puzzleDate] || null;
 };
 
 const parseNYTData = (data: NYTConnectionsData): string[] => {
@@ -206,7 +252,12 @@ export function ConnectionsGame() {
   useEffect(() => {
     const gameState = getCurrentGameState();
     saveGameState(gameState);
-  }, [getCurrentGameState]);
+    
+    // Also save puzzle-specific state if we have a puzzle date
+    if (puzzleDate) {
+      savePuzzleState(puzzleDate, tileMarks, activeColor);
+    }
+  }, [getCurrentGameState, puzzleDate, tileMarks, activeColor]);
 
   const handleTileClick = (tileIndex: number) => {
     setTileMarks(prev => {
@@ -274,7 +325,17 @@ export function ConnectionsGame() {
       const todaysWords = await fetchPuzzleByDate();
       setOriginalWords(todaysWords);
       setWords(todaysWords);
-      setTileMarks({}); // Clear all markings when words change
+      
+      // Load existing state for this puzzle date, or start fresh
+      const savedPuzzleState = loadPuzzleState(today);
+      if (savedPuzzleState) {
+        setTileMarks(savedPuzzleState.tileMarks);
+        setActiveColor(savedPuzzleState.activeColor);
+      } else {
+        setTileMarks({});
+        setActiveColor('yellow');
+      }
+      
       setEditText(todaysWords.join(' '));
       setPuzzleDate(today);
     } catch (error) {
@@ -303,7 +364,17 @@ export function ConnectionsGame() {
       const dateWords = await fetchPuzzleByDate(dateToUse);
       setOriginalWords(dateWords);
       setWords(dateWords);
-      setTileMarks({}); // Clear all markings when words change
+      
+      // Load existing state for this puzzle date, or start fresh
+      const savedPuzzleState = loadPuzzleState(dateToUse);
+      if (savedPuzzleState) {
+        setTileMarks(savedPuzzleState.tileMarks);
+        setActiveColor(savedPuzzleState.activeColor);
+      } else {
+        setTileMarks({});
+        setActiveColor('yellow');
+      }
+      
       setEditText(dateWords.join(' '));
       setPuzzleDate(dateToUse);
     } catch (error) {
@@ -364,10 +435,10 @@ export function ConnectionsGame() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="flex-1 bg-background p-4">
+      <div className="max-w-2xl mx-auto space-y-5 pt-2 pb-4">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-1">
           <h1 className="text-3xl font-bold text-foreground">
             Connections Buddy 🥰
           </h1>
@@ -440,18 +511,6 @@ export function ConnectionsGame() {
           </div>
         </div>
 
-        {/* Color Swatches */}
-        <div className="flex justify-between gap-3 md:gap-4">
-          {COLORS.map(color => (
-            <ColorSwatch
-              key={color}
-              color={color}
-              isActive={activeColor === color}
-              onClick={() => setActiveColor(color)}
-            />
-          ))}
-        </div>
-
         {/* Word Editor */}
         {isEditing && (
           <div className="bg-card rounded-lg p-4 space-y-4">
@@ -491,6 +550,19 @@ export function ConnectionsGame() {
             />
           ))}
         </div>
+
+        {/* Color Swatches */}
+        <div className="flex justify-between gap-3 md:gap-4">
+          {COLORS.map(color => (
+            <ColorSwatch
+              key={color}
+              color={color}
+              isActive={activeColor === color}
+              onClick={() => setActiveColor(color)}
+            />
+          ))}
+        </div>
+
 
         {/* Game Actions */}
         <div className="flex justify-between">
