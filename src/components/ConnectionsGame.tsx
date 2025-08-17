@@ -184,18 +184,10 @@ export function ConnectionsGame() {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState((cachedState?.originalWords || SAMPLE_WORDS).join(' '));
   const [isLoading, setIsLoading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(cachedState?.selectedDate || cachedState?.puzzleDate || '');
   const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>(getCurrentPillState());
   const [puzzleDate, setPuzzleDate] = useState(cachedState?.puzzleDate || '');
   const dateInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (showDatePicker && dateInputRef.current) {
-      dateInputRef.current.showPicker?.();
-      setShowDatePicker(false);
-    }
-  }, [showDatePicker, selectedDate, selectedPill]);
 
   // Function to get current game state
   const getCurrentGameState = useCallback((): GameState => ({
@@ -383,7 +375,7 @@ export function ConnectionsGame() {
               disabled={isEditing || isLoading}
               className={`rounded-full px-3 py-1 text-xs transition-all border ${
                 selectedPill === 'today' 
-                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
@@ -392,11 +384,11 @@ export function ConnectionsGame() {
             <Button 
               variant="ghost"
               size="sm" 
-              onClick={() => setShowDatePicker(true)}
+              onClick={() => dateInputRef.current?.click()}
               disabled={isEditing || isLoading}
               className={`rounded-full px-3 py-1 text-xs transition-all border ${
                 selectedPill === 'date' 
-                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
@@ -409,7 +401,7 @@ export function ConnectionsGame() {
               disabled={isLoading}
               className={`rounded-full px-3 py-1 text-xs transition-all border ${
                 selectedPill === 'custom' 
-                  ? 'bg-blue-600 border-blue-600 text-blue-50 hover:bg-blue-700' 
+                  ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' 
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede] hover:bg-[#ebe8e8]'
               }`}
             >
