@@ -70,6 +70,32 @@ const STORAGE_KEY = 'connections-buddy-game-state';
 const PUZZLE_CACHE_KEY = 'connections-buddy-puzzle-cache';
 const PUZZLE_STATE_CACHE_KEY = 'connections-buddy-puzzle-states';
 
+// Helper functions for proper timezone handling
+const getLocalDateString = (date: Date = new Date()): string => {
+  // Get YYYY-MM-DD format in local timezone
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getTodayInUserTimezone = (): string => {
+  return getLocalDateString(new Date());
+};
+
+const getMaxAllowedDate = (): string => {
+  // NYT Connections releases at midnight Eastern Time
+  // We'll be conservative and only allow today in user's timezone
+  // This prevents the issue of showing too many future dates
+  
+  const now = new Date();
+  const today = getLocalDateString(now);
+  
+  // For now, let's be conservative and only allow up to today
+  // This ensures we don't show puzzles that aren't available yet
+  return today;
+};
+
 const saveGameState = (state: GameState) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -180,7 +206,7 @@ const parseNYTData = (data: NYTConnectionsData): string[] => {
 };
 
 const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
-  const puzzleDate = date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const puzzleDate = date || getTodayInUserTimezone(); // YYYY-MM-DD format in user timezone
   
   // Check cache first
   const cachedWords = getCachedPuzzle(puzzleDate);
@@ -213,7 +239,7 @@ export function ConnectionsGame() {
   const getCurrentPillState = (): 'today' | 'date' | 'custom' => {
     if (!cachedState) return 'custom';
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInUserTimezone();
     const cachedPuzzleDate = cachedState.puzzleDate;
     const cachedPill = cachedState.selectedPill;
     
@@ -236,6 +262,7 @@ export function ConnectionsGame() {
   const [selectedPill, setSelectedPill] = useState<'today' | 'date' | 'custom'>(getCurrentPillState());
   const [puzzleDate, setPuzzleDate] = useState(cachedState?.puzzleDate || '');
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isResetDropTarget, setIsResetDropTarget] = useState(false);
 
   // Function to get current game state
   const getCurrentGameState = useCallback((): GameState => ({
@@ -319,7 +346,7 @@ export function ConnectionsGame() {
   const handleLoadTodaysPuzzle = async () => {
     setIsLoading(true);
     setSelectedPill('today');
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInUserTimezone();
     setSelectedDate(today); // Keep date state in sync
     try {
       const todaysWords = await fetchPuzzleByDate();
@@ -351,7 +378,7 @@ export function ConnectionsGame() {
     if (!dateToUse) return;
     
     setIsLoading(true);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInUserTimezone();
     
     // If picking today's date, highlight "Today" button instead
     if (dateToUse === today) {
@@ -446,6 +473,22 @@ export function ConnectionsGame() {
     }
   };
 
+  const handleColorClear = (colorToClear: Color) => {
+    setTileMarks(prev => {
+      const newTileMarks: Record<number, Color[]> = {};
+      
+      Object.entries(prev).forEach(([tileIndex, colors]) => {
+        const newColors = colors.filter(color => color !== colorToClear);
+        if (newColors.length > 0) {
+          newTileMarks[parseInt(tileIndex)] = newColors;
+        }
+        // If no colors left, don't add the tile to newTileMarks (effectively removes it)
+      });
+      
+      return newTileMarks;
+    });
+  };
+
   // Format date for display (e.g. "Aug 15")
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return "Pick Date 📅";
@@ -512,9 +555,10 @@ export function ConnectionsGame() {
                   selected={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
                   onSelect={handleCalendarDateSelect}
                   disabled={(date) => {
-                    const today = new Date();
-                    const minDate = new Date('2023-06-12');
-                    return date > today || date < minDate;
+                    const dateString = getLocalDateString(date);
+                    const maxAllowed = getMaxAllowedDate();
+                    const minAllowed = '2023-06-12';
+                    return dateString > maxAllowed || dateString < minAllowed;
                   }}
                   initialFocus
                 />
@@ -597,7 +641,27 @@ export function ConnectionsGame() {
             variant="secondary" 
             size="sm" 
             onClick={handleReset}
-            className="gap-1"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              setIsResetDropTarget(true);
+            }}
+            onDragLeave={() => {
+              setIsResetDropTarget(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const draggedColor = e.dataTransfer.getData('text/plain') as Color;
+              if (draggedColor) {
+                handleColorClear(draggedColor);
+              }
+              setIsResetDropTarget(false);
+            }}
+            className={`gap-1 transition-all duration-200 ${
+              isResetDropTarget 
+                ? 'ring-2 ring-red-400 ring-opacity-50 scale-105 bg-red-50 border-red-300' 
+                : ''
+            }`}
           >
             Reset 🧹
           </Button>
