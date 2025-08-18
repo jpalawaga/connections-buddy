@@ -527,9 +527,13 @@ export function ConnectionsGame() {
               disabled={isEditing || isLoading}
               className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
                 selectedPill === 'today' 
-                  ? 'bg-blue-600 border-blue-600 text-white' 
+                  ? 'text-white' 
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
               }`}
+              style={selectedPill === 'today' ? {
+                backgroundColor: 'rgb(104, 131, 191)',
+                borderColor: 'rgb(104, 131, 191)'
+              } : {}}
             >
               {isLoading && selectedPill === 'today' ? "Loading..." : "Today"}
             </Button>
@@ -542,9 +546,13 @@ export function ConnectionsGame() {
                   disabled={isEditing || isLoading}
                   className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
                     selectedPill === 'date' 
-                      ? 'bg-blue-600 border-blue-600 text-white' 
+                      ? 'text-white' 
                       : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
                   }`}
+                  style={selectedPill === 'date' ? {
+                    backgroundColor: 'rgb(104, 131, 191)',
+                    borderColor: 'rgb(104, 131, 191)'
+                  } : {}}
                 >
                   {selectedPill === 'date' && puzzleDate ? formatDateForDisplay(puzzleDate) : "Pick Date 📅"}
                 </Button>
@@ -572,9 +580,13 @@ export function ConnectionsGame() {
               disabled={isLoading}
               className={`rounded-full px-3 py-1 text-xs transition-all border touch-manipulation select-none connections-pill ${
                 selectedPill === 'custom' 
-                  ? 'bg-blue-600 border-blue-600 text-white' 
+                  ? 'text-white' 
                   : 'bg-[#f0eded] text-[#555] border-[#e0dede]'
               }`}
+              style={selectedPill === 'custom' ? {
+                backgroundColor: 'rgb(104, 131, 191)',
+                borderColor: 'rgb(104, 131, 191)'
+              } : {}}
             >
               Custom...
             </Button>
