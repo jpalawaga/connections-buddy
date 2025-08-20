@@ -146,7 +146,7 @@ export function ColorSwatch({ color, isActive, count, onClick, onColorSwap }: Co
       }}
     >
       {count > 0 && (
-        <span className={`absolute inset-0 flex items-center justify-center text-sm font-bold ${colors.text}`}>
+        <span className={`absolute top-1 left-1 right-1 bottom-1 flex items-center justify-center text-xs sm:text-sm font-bold ${colors.text}`}>
           {count}
         </span>
       )}

@@ -41,7 +41,7 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
   const backgroundStyle = getBackgroundStyle(markedColors);
   const hasColors = markedColors.length > 0;
   
-  // Smart text sizing based on estimated character width
+  // Smart text sizing based on estimated character width and line breaks
   const getTextSizeStyle = (word: string) => {
     // More accurate character width estimation
     const getCharWidth = (char: string) => {
@@ -57,9 +57,24 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
     
     const estimatedWidth = word.split('').reduce((sum, char) => sum + getCharWidth(char), 0);
     
-    // Calculate base size and responsive scaling separately
-    const baseSize = Math.max(0.7, Math.min(1.2, 8 / estimatedWidth)); // rem units
-    const vwSize = Math.max(1.2, Math.min(3, 12 / estimatedWidth)); // vw units
+    // Simple approach: if text has spaces (multiple words), it will likely break to multiple lines
+    // Multi-word phrases get larger fonts since they have more space per line
+    const hasMultipleWords = word.includes(' ');
+    
+    // For multi-word phrases, use a much larger font size
+    if (hasMultipleWords) {
+      return {
+        fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)'
+      };
+    }
+    
+    // Single words use the original sizing logic
+    const baseSize = Math.max(0.7, Math.min(1.2, 7 / estimatedWidth)); // rem units
+    const vwSize = Math.max(1.0, Math.min(2.8, 10 / estimatedWidth)); // vw units
+    
+    return {
+      fontSize: `clamp(${baseSize * 0.8}rem, ${vwSize}vw, ${baseSize}rem)`
+    };
     
     return {
       fontSize: `clamp(${baseSize * 0.8}rem, ${vwSize}vw, ${baseSize}rem)`
@@ -82,7 +97,7 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
       }}
       className={cn(
         "relative border border-tile-border rounded-lg",
-        "p-2 min-h-[80px] flex flex-col items-center justify-center",
+        "p-3 sm:p-4 min-h-[80px] flex flex-col items-center justify-center",
         "transition-all duration-200 ease-out",
         "font-medium",
         "shadow-sm focus:outline-none focus-visible:outline-none focus-within:outline-none",
@@ -96,7 +111,7 @@ export function ConnectionsTile({ word, markedColors, onClick }: ConnectionsTile
         hasColors && "text-foreground animate-scale-in"
       )}
     >
-      <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm px-1">
+      <span className="text-center leading-tight uppercase tracking-wide drop-shadow-sm px-3 overflow-hidden">
         {word}
       </span>
     </button>
