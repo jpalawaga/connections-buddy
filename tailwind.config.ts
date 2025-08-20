@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
@@ -55,14 +56,19 @@ export default {
 				connections: {
 					yellow: 'hsl(var(--connections-yellow))',
 					'yellow-dark': 'hsl(var(--connections-yellow-dark))',
+					'yellow-text': 'hsl(var(--connections-yellow-text))',
 					green: 'hsl(var(--connections-green))',
 					'green-dark': 'hsl(var(--connections-green-dark))',
+					'green-text': 'hsl(var(--connections-green-text))',
 					blue: 'hsl(var(--connections-blue))',
 					'blue-dark': 'hsl(var(--connections-blue-dark))',
+					'blue-text': 'hsl(var(--connections-blue-text))',
 					purple: 'hsl(var(--connections-purple))',
 					'purple-dark': 'hsl(var(--connections-purple-dark))',
+					'purple-text': 'hsl(var(--connections-purple-text))',
 					red: 'hsl(var(--connections-red))',
-					'red-dark': 'hsl(var(--connections-red-dark))'
+					'red-dark': 'hsl(var(--connections-red-dark))',
+					'red-text': 'hsl(var(--connections-red-text))'
 				},
 				tile: {
 					background: 'hsl(var(--tile-background))',
@@ -124,5 +130,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [tailwindcssAnimate],
 } satisfies Config;

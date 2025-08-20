@@ -37,16 +37,23 @@ All colors MUST be HSL.
     --ring: 0 0% 20%;
 
     /* Connections Colors */
-    --connections-yellow: 60 100% 85%;
-    --connections-yellow-dark: 60 100% 45%;
-    --connections-green: 120 100% 85%;
-    --connections-green-dark: 120 100% 75%;
-    --connections-blue: 220 100% 85%;
-    --connections-blue-dark: 220 100% 75%;
-    --connections-purple: 270 100% 85%;
-    --connections-purple-dark: 270 100% 75%;
+    --connections-yellow: 50 90% 70%;
+    --connections-yellow-dark: 50 90% 45%;
+    --connections-green: 90 50% 60%;
+    --connections-green-dark: 90 50% 45%;
+    --connections-blue: 220 70% 80%;
+    --connections-blue-dark: 220 70% 55%;
+    --connections-purple: 290 35% 65%;
+    --connections-purple-dark: 290 35% 45%;
     --connections-red: 0 100% 85%;
     --connections-red-dark: 0 100% 75%;
+    
+    /* Connections Text Colors - darker versions of each swatch color */
+    --connections-yellow-text: 50 90% 35%;
+    --connections-green-text: 90 50% 35%;
+    --connections-blue-text: 220 70% 55%;
+    --connections-purple-text: 290 35% 35%;
+    --connections-red-text: 0 100% 45%;
 
     /* Game tile colors */
     --tile-background: 0 0% 98%;
@@ -115,6 +122,13 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Connections Colors - dark mode */
+    --connections-yellow-text: 50 90% 65%;
+    --connections-green-text: 90 50% 65%;
+    --connections-blue-text: 220 70% 75%;
+    --connections-purple-text: 290 35% 75%;
+    --connections-red-text: 0 100% 75%;
   }
 }
 

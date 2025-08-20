@@ -635,15 +635,23 @@ export function ConnectionsGame() {
 
         {/* Color Swatches */}
         <div className="flex justify-between gap-3 md:gap-4">
-          {COLORS.map(color => (
-            <ColorSwatch
-              key={color}
-              color={color}
-              isActive={activeColor === color}
-              onClick={() => setActiveColor(color)}
-              onColorSwap={handleColorSwap}
-            />
-          ))}
+          {COLORS.map(color => {
+            // Calculate count of tiles marked with this color
+            const count = Object.values(tileMarks).filter(colors => 
+              colors.includes(color)
+            ).length;
+            
+            return (
+              <ColorSwatch
+                key={color}
+                color={color}
+                isActive={activeColor === color}
+                count={count}
+                onClick={() => setActiveColor(color)}
+                onColorSwap={handleColorSwap}
+              />
+            );
+          })}
         </div>
 
 

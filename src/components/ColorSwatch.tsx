@@ -6,6 +6,7 @@ type Color = 'yellow' | 'green' | 'blue' | 'purple' | 'red';
 interface ColorSwatchProps {
   color: Color;
   isActive: boolean;
+  count: number;
   onClick: () => void;
   onColorSwap: (fromColor: Color, toColor: Color) => void;
 }
@@ -14,31 +15,36 @@ const colorClasses = {
   yellow: {
     bg: 'bg-connections-yellow',
     borderUnselected: 'border-connections-yellow',
-    borderSelected: 'border-connections-yellow-dark'
+    borderSelected: 'border-connections-yellow-dark',
+    text: 'text-connections-yellow-text'
   },
   green: {
     bg: 'bg-connections-green',
     borderUnselected: 'border-connections-green',
-    borderSelected: 'border-connections-green-dark'
+    borderSelected: 'border-connections-green-dark',
+    text: 'text-connections-green-text'
   },
   blue: {
     bg: 'bg-connections-blue',
     borderUnselected: 'border-connections-blue',
-    borderSelected: 'border-connections-blue-dark'
+    borderSelected: 'border-connections-blue-dark',
+    text: 'text-connections-blue-text'
   },
   purple: {
     bg: 'bg-connections-purple',
     borderUnselected: 'border-connections-purple',
-    borderSelected: 'border-connections-purple-dark'
+    borderSelected: 'border-connections-purple-dark',
+    text: 'text-connections-purple-text'
   },
   red: {
     bg: 'bg-connections-red',
     borderUnselected: 'border-connections-red',
-    borderSelected: 'border-connections-red-dark'
+    borderSelected: 'border-connections-red-dark',
+    text: 'text-connections-red-text'
   },
 };
 
-export function ColorSwatch({ color, isActive, onClick, onColorSwap }: ColorSwatchProps) {
+export function ColorSwatch({ color, isActive, count, onClick, onColorSwap }: ColorSwatchProps) {
   const colors = colorClasses[color];
   const [isDragging, setIsDragging] = useState(false);
   const [isDropTarget, setIsDropTarget] = useState(false);
@@ -125,7 +131,7 @@ export function ColorSwatch({ color, isActive, onClick, onColorSwap }: ColorSwat
       className={cn(
         "w-full h-8 rounded-md border-2 transition-all duration-200 transform",
         "touch-manipulation select-none",
-        "connections-swatch", // Custom class for mobile-safe interactions
+        "connections-swatch relative", // Custom class for mobile-safe interactions
         colors.bg,
         isActive ? colors.borderSelected : colors.borderUnselected,
         isActive 
@@ -138,6 +144,12 @@ export function ColorSwatch({ color, isActive, onClick, onColorSwap }: ColorSwat
       style={{
         cursor: isDragging ? 'grabbing' : 'pointer'
       }}
-    />
+    >
+      {count > 0 && (
+        <span className={`absolute inset-0 flex items-center justify-center text-sm font-bold ${colors.text}`}>
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
