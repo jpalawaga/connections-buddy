@@ -504,7 +504,7 @@ export function ConnectionsGame() {
   };
 
   return (
-    <div className="flex-1 bg-background p-4">
+    <div className="flex-1 bg-background p-3 sm:p-4">
       <div className="max-w-2xl mx-auto space-y-5 pt-2 pb-4">
         {/* Header */}
         <div className="text-center space-y-1">
@@ -622,7 +622,7 @@ export function ConnectionsGame() {
 
 
         {/* Game Grid */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {words.map((word, index) => (
             <ConnectionsTile
               key={index}
