@@ -215,7 +215,7 @@ const fetchPuzzleByDate = async (date?: string): Promise<string[]> => {
   }
   
   // Fetch from API if not in cache
-  const url = `https://proxy.corsfix.com/?https://www.nytimes.com/svc/connections/v2/${puzzleDate}.json`;
+  const url = https://api.codetabs.com/v1/proxy/?quest=https://www.nytimes.com/svc/connections/v2/${puzzleDate}.json`;
   
   const response = await fetch(url);
   if (!response.ok) {
